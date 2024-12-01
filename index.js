@@ -6,7 +6,6 @@ import dotenv from "dotenv";
 import { Student } from "./schema/student.js";
 import { Admin } from "./schema/admin.js";
 import { Faculty } from "./schema/faculty.js";
-import { Subject } from "./schema/subject.js";
 
 dotenv.config();
 const app = express();
@@ -64,12 +63,62 @@ app.get("/", (req, res) => {
   res.send("<h1>Hello there</h1>");
 });
 
-// REGISTER
+// ROUTES
 app.post("/student/register", async (req, res) => {
   try {
-    const { rollNumber, name, semester, password, subjects } = req.body;
-    console.log(subjects);
-    if (!rollNumber || !name || !semester || !password || !subjects) throw new Error("One or More Fields missing.");
+    const { rollNumber, name, semester, password } = req.body;
+    if (!rollNumber || !name || !semester || !password) throw new Error("One or More Fields missing.");
+    if (semester < 1 || semester > 6) throw new Error("Semester does not exist");
+    let subjects = [];
+
+    switch (semester) {
+      case "1":
+        subjects = [
+          { name: "Sub1", code: 101 },
+          { name: "Sub2", code: 102 },
+          { name: "Sub3", code: 103 },
+        ];
+        break;
+      case "2":
+        subjects = [
+          { name: "Sub1", code: 104 },
+          { name: "Sub2", code: 105 },
+          { name: "Sub3", code: 106 },
+        ];
+        break;
+      case "3":
+        subjects = [
+          { name: "Sub1", code: 107 },
+          { name: "Sub2", code: 108 },
+          { name: "Sub3", code: 109 },
+        ];
+        break;
+      case "4":
+        subjects = [
+          { name: "Sub1", code: 110 },
+          { name: "Sub2", code: 111 },
+          { name: "Sub3", code: 112 },
+        ];
+        break;
+      case "5":
+        subjects = [
+          { name: "Sub1", code: 113 },
+          { name: "Sub2", code: 114 },
+          { name: "Sub3", code: 115 },
+        ];
+        break;
+      case "6":
+        subjects = [
+          { name: "Sub1", code: 116 },
+          { name: "Sub2", code: 117 },
+          { name: "Sub3", code: 118 },
+        ];
+        break;
+      default:
+        subjects = [];
+        break;
+    }
+
     await Student.create({
       name,
       rollNumber,
@@ -78,15 +127,13 @@ app.post("/student/register", async (req, res) => {
       subjects,
     });
     const token = await generateToken({ rollNumber, role: "student" });
-
+    if (!token) throw new Error("Token generation failed but record was created");
     return res.status(200).json({ message: "registered successfully", token });
   } catch (err) {
-    console.log(err);
     return res.status(400).json({ message: err.message });
   }
 });
 
-// LOGIN
 app.post("/student/login", async (req, res) => {
   try {
     const { rollNumber, password } = req.body;
