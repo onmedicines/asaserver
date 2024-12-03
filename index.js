@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import express from "express";
+import fileUpload from "express-fileupload";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -11,6 +12,7 @@ import { Assignment } from "./schema/assignment.js";
 dotenv.config();
 const app = express();
 app.use(express.json());
+app.use(fileUpload());
 app.use(cors());
 const PORT = 3000;
 app.listen(PORT, () => {
@@ -154,7 +156,6 @@ app.get("/getStudentInfo", authenticate, async (req, res) => {
     const { rollNumber, role } = req.payload;
     if (role !== "student") throw new Error("Unauthorized");
     const student = await Student.findOne({ rollNumber }, { password: 0 });
-
     return res.status(200).json({ message: "data fetched successfully", student });
   } catch (err) {
     console.error(err);
@@ -204,7 +205,27 @@ app.get("/student/dashboard", authenticate, async (req, res) => {
   }
 });
 
-app.post("/submitAssignment", (req, res) => {
+app.post("/submitAssignment", authenticate, async (req, res) => {
   try {
-  } catch (error) {}
+    const { rollNumber, role } = req.payload;
+    if (role !== "student") throw new Error("Cannot authenticate");
+    const { file } = req.files;
+    let { code } = req.body;
+    code = Number(code);
+
+    await Assignment.create({
+      code,
+      rollNumber,
+      file: {
+        name: file.name,
+        data: file.data,
+        mimetype: file.mimetype,
+        size: file.size,
+      },
+    });
+
+    return res.status(200).json({ message: "assignment submitted successfully" });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
 });
