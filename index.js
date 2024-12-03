@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { Student } from "./schema/student.js";
 import { Admin } from "./schema/admin.js";
 import { Faculty } from "./schema/faculty.js";
+import { Assignment } from "./schema/assignment.js";
 
 dotenv.config();
 const app = express();
@@ -148,6 +149,19 @@ app.post("/student/login", async (req, res) => {
   }
 });
 
+app.get("/getStudentInfo", authenticate, async (req, res) => {
+  try {
+    const { rollNumber, role } = req.payload;
+    if (role !== "student") throw new Error("Unauthorized");
+    const student = await Student.findOne({ rollNumber }, { password: 0 });
+
+    return res.status(200).json({ message: "data fetched successfully", student });
+  } catch (err) {
+    console.error(err);
+    return res.status(400).json({ message: err.message });
+  }
+});
+
 app.post("/admin/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -188,4 +202,9 @@ app.get("/student/dashboard", authenticate, async (req, res) => {
   } catch (err) {
     return res.status(400).json({ message: err.message });
   }
+});
+
+app.post("/submitAssignment", (req, res) => {
+  try {
+  } catch (error) {}
 });

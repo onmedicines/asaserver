@@ -9,11 +9,6 @@ const studentSchema = new mongoose.Schema({
     {
       name: { type: String, required: true },
       code: { type: Number, required: true },
-      assignment: {
-        data: { type: Buffer, required: true },
-        mimetype: { type: String, required: true },
-        size: { type: Number },
-      },
       isSubmitted: { type: Boolean, required: true, default: false },
     },
   ],
