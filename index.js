@@ -163,6 +163,47 @@ app.get("/getStudentInfo", authenticate, async (req, res) => {
   }
 });
 
+app.get("/student/dashboard", authenticate, async (req, res) => {
+  try {
+    const { rollNumber, role } = req.payload;
+    if (role !== "student") throw new Error(`Token expected for student, received for ${roll}`);
+    const student = await Student.findOne({ rollNumber }, { rollNumber: 1, name: 1, semester: 1, subjects: 1 });
+    if (!student) throw new Error("Cannot access student details");
+    return res.status(200).json({ message: "Fetched data successfully", student });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+});
+
+app.post("/submitAssignment", authenticate, async (req, res) => {
+  try {
+    const { rollNumber, role } = req.payload;
+    if (role !== "student") throw new Error("Cannot authenticate");
+    const { file } = req.files;
+    let { code } = req.body;
+    code = Number(code);
+    if (!file || !code) throw new Error("File or code missing");
+
+    const assignment = await Assignment.create({
+      code,
+      rollNumber,
+      file: {
+        name: file.name,
+        data: file.data,
+        mimetype: file.mimetype,
+        size: file.size,
+      },
+    });
+    const student = await Student.findOneAndUpdate({ rollNumber, "subjects.code": code }, { $set: { "subjects.$.isSubmitted": true } });
+
+    if (!assignment || !student) throw new Error("Something went wrong");
+
+    return res.status(200).json({ message: "assignment submitted successfully" });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+});
+
 app.post("/admin/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -190,42 +231,5 @@ app.post("/faculty/login", async (req, res) => {
   } catch (err) {
     console.log(err);
     return res.status(400).json({ message: "some error occured" });
-  }
-});
-
-app.get("/student/dashboard", authenticate, async (req, res) => {
-  try {
-    const { rollNumber, role } = req.payload;
-    if (role !== "student") throw new Error(`Token expected for student, received for ${roll}`);
-    const student = await Student.findOne({ rollNumber }, { rollNumber: 1, name: 1, semester: 1, subjects: 1 });
-    if (!student) throw new Error("Cannot access student details");
-    return res.status(200).json({ message: "Fetched data successfully", student });
-  } catch (err) {
-    return res.status(400).json({ message: err.message });
-  }
-});
-
-app.post("/submitAssignment", authenticate, async (req, res) => {
-  try {
-    const { rollNumber, role } = req.payload;
-    if (role !== "student") throw new Error("Cannot authenticate");
-    const { file } = req.files;
-    let { code } = req.body;
-    code = Number(code);
-
-    await Assignment.create({
-      code,
-      rollNumber,
-      file: {
-        name: file.name,
-        data: file.data,
-        mimetype: file.mimetype,
-        size: file.size,
-      },
-    });
-
-    return res.status(200).json({ message: "assignment submitted successfully" });
-  } catch (err) {
-    return res.status(400).json({ message: err.message });
   }
 });
