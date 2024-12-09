@@ -208,8 +208,12 @@ app.get("/student/getAssignment", authenticate, async (req, res) => {
   const { rollNumber, role } = req.payload;
   let { code } = req.query;
   console.log(code);
-  const file = await Assignment.findOne({ rollNumber, code }, { file: 1 });
-  res.status(200).json(file);
+  const assignment = await Assignment.findOne({ rollNumber, code }, { file: 1 });
+
+  // send file as a stream instead of a single json
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `inline; filename="${code}.pdf"`);
+  res.send(assignment.file.data);
 });
 
 app.post("/admin/login", async (req, res) => {
