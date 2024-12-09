@@ -204,6 +204,14 @@ app.post("/submitAssignment", authenticate, async (req, res) => {
   }
 });
 
+app.get("/student/getAssignment", authenticate, async (req, res) => {
+  const { rollNumber, role } = req.payload;
+  let { code } = req.query;
+  console.log(code);
+  const file = await Assignment.findOne({ rollNumber, code }, { file: 1 });
+  res.status(200).json(file);
+});
+
 app.post("/admin/login", async (req, res) => {
   try {
     const { username, password } = req.body;
