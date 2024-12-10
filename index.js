@@ -74,6 +74,9 @@ app.post("/student/register", async (req, res) => {
     if (semester < 1 || semester > 6) throw new Error("Semester does not exist");
     let subjects = [];
 
+    let student = Student.findOne({ rollNumber });
+    if (student) throw new Error("Student with this roll number already exists");
+
     switch (semester) {
       case "1":
         subjects = [
