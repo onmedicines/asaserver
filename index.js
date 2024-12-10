@@ -184,7 +184,10 @@ app.post("/submitAssignment", authenticate, async (req, res) => {
     code = Number(code);
     if (!file || !code) throw new Error("File or code missing");
 
-    const assignment = await Assignment.create({
+    let assignment = await Assignment.findOne({ rollNumber, code });
+    if (assignment) throw new Error("Assignment already exists");
+
+    assignment = await Assignment.create({
       code,
       rollNumber,
       file: {
@@ -207,7 +210,6 @@ app.post("/submitAssignment", authenticate, async (req, res) => {
 app.get("/student/getAssignment", authenticate, async (req, res) => {
   const { rollNumber, role } = req.payload;
   let { code } = req.query;
-  console.log(code);
   const assignment = await Assignment.findOne({ rollNumber, code }, { file: 1 });
 
   // send file as a stream instead of a single json
