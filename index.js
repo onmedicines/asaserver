@@ -240,13 +240,13 @@ app.post("/faculty/login", async (req, res) => {
   try {
     const { username, password } = req.body;
     const faculty = await Faculty.findOne({ username });
-    if (!faculty) throw new Error("faculty does not exist");
+    if (!faculty) throw new Error("Faculty does not exist");
     if (faculty.password !== password) throw new Error("Invalid credentials");
     const token = await generateToken({ username, role: "faculty" });
     if (!token) throw new Error("Token generation failed");
-    return res.status(200).json({ message: "faculty logged in successfully", token });
+    return res.status(200).json({ message: "Faculty logged in successfully", token });
   } catch (err) {
     console.log(err);
-    return res.status(400).json({ message: "some error occured" });
+    return res.status(400).json({ message: err.message });
   }
 });
