@@ -8,6 +8,7 @@ import { Student } from "./schema/student.js";
 import { Admin } from "./schema/admin.js";
 import { Faculty } from "./schema/faculty.js";
 import { Assignment } from "./schema/assignment.js";
+import { Semester } from "./schema/semester.js";
 
 dotenv.config();
 const app = express();
@@ -70,60 +71,14 @@ app.get("/", (req, res) => {
 app.post("/student/register", async (req, res) => {
   try {
     const { rollNumber, name, semester, password } = req.body;
+
     if (!rollNumber || !name || !semester || !password) throw new Error("One or More Fields missing.");
     if (semester < 1 || semester > 6) throw new Error("Semester does not exist");
-    let subjects = [];
 
-    let student = Student.findOne({ rollNumber });
+    let student = await Student.findOne({ rollNumber });
     if (student) throw new Error("Student with this roll number already exists");
 
-    switch (semester) {
-      case "1":
-        subjects = [
-          { name: "Sub1", code: 101 },
-          { name: "Sub2", code: 102 },
-          { name: "Sub3", code: 103 },
-        ];
-        break;
-      case "2":
-        subjects = [
-          { name: "Sub1", code: 104 },
-          { name: "Sub2", code: 105 },
-          { name: "Sub3", code: 106 },
-        ];
-        break;
-      case "3":
-        subjects = [
-          { name: "Sub1", code: 107 },
-          { name: "Sub2", code: 108 },
-          { name: "Sub3", code: 109 },
-        ];
-        break;
-      case "4":
-        subjects = [
-          { name: "Sub1", code: 110 },
-          { name: "Sub2", code: 111 },
-          { name: "Sub3", code: 112 },
-        ];
-        break;
-      case "5":
-        subjects = [
-          { name: "Sub1", code: 113 },
-          { name: "Sub2", code: 114 },
-          { name: "Sub3", code: 115 },
-        ];
-        break;
-      case "6":
-        subjects = [
-          { name: "Sub1", code: 116 },
-          { name: "Sub2", code: 117 },
-          { name: "Sub3", code: 118 },
-        ];
-        break;
-      default:
-        subjects = [];
-        break;
-    }
+    let { subjects } = await Semester.findOne({ semester: semester });
 
     await Student.create({
       name,
