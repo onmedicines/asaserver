@@ -67,7 +67,7 @@ app.get("/", (req, res) => {
   res.send("<h1>Hello there</h1>");
 });
 
-// ROUTES
+// Student
 app.post("/student/register", async (req, res) => {
   try {
     const { rollNumber, name, semester, password } = req.body;
@@ -191,6 +191,7 @@ app.post("/admin/login", async (req, res) => {
   }
 });
 
+// faculty
 app.post("/faculty/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -200,6 +201,18 @@ app.post("/faculty/login", async (req, res) => {
     const token = await generateToken({ username, role: "faculty" });
     if (!token) throw new Error("Token generation failed");
     return res.status(200).json({ message: "Faculty logged in successfully", token });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+});
+
+app.get("/getFacultyInfo", authenticate, async (req, res) => {
+  try {
+    const { username, role } = req.payload;
+    if (role !== "faculty") throw new Error("Unauthorized");
+    const { name } = await Faculty.findOne({ username }, { name: 1 });
+    if (!name) throw new Error("Something went wrong. Please login again.");
+    return res.status(200).json({ name });
   } catch (err) {
     console.log(err);
     return res.status(400).json({ message: err.message });
