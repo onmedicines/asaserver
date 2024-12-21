@@ -1,7 +1,7 @@
+import cors from "cors";
 import mongoose from "mongoose";
 import express from "express";
 import fileUpload from "express-fileupload";
-import cors from "cors";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { Student } from "./schema/student.js";
@@ -216,5 +216,22 @@ app.get("/getFacultyInfo", authenticate, async (req, res) => {
   } catch (err) {
     console.log(err);
     return res.status(400).json({ message: err.message });
+  }
+});
+
+app.post("/getStudentByRoll", authenticate, async (req, res) => {
+  try {
+    const { rollNumber } = req.body;
+    console.log(req.body);
+    if (!rollNumber) throw new Error("Roll number not found");
+    const assignments = await Assignment.find({ rollNumber }, { code: 1 });
+    if (!assignments) throw new Error("No assignments with guven roll number found");
+    const codes = assignments.map((ele) => ele.code);
+    const student = await Student.findOne({ rollNumber }, { name: 1 });
+    if (!student) throw new Error("Student not found");
+    return res.status(200).json({ codes, name: student.name });
+  } catch (err) {
+    console.log(err.message);
+    res.status(400).json({ message: err.message });
   }
 });
