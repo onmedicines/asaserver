@@ -235,3 +235,20 @@ app.post("/getStudentByRoll", authenticate, async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
+
+app.get("/faculty/getAssignment", authenticate, async (req, res) => {
+  try {
+    const { code, rollNumber } = req.query;
+    console.log(code, rollNumber);
+    if (!code || !rollNumber) throw new Error("Code or Roll number not provided");
+    const assignment = await Assignment.findOne({ rollNumber, code }, { file: 1 });
+    if (!assignment) throw new Error("Assignment not submitted");
+    // send file as a stream instead of a single json
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${code}.pdf"`);
+    res.send(assignment.file.data);
+  } catch (err) {
+    console.log(err.message);
+    return res.status(400).json({ message: err.message });
+  }
+});
