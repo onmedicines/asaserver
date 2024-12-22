@@ -252,3 +252,17 @@ app.get("/faculty/getAssignment", authenticate, async (req, res) => {
     return res.status(400).json({ message: err.message });
   }
 });
+
+app.get("/getSubjects", authenticate, async (req, res) => {
+  try {
+    const semesters = await Semester.find({});
+    if (!semesters) throw new Error("Sorry something went wrong please login and try again later!");
+    const subjectCodes = semesters.reduce((acc, semester) => {
+      const codes = semester.subjects.map((subject) => subject.code);
+      return [...acc, ...codes];
+    }, []);
+    return res.status(200).json({ subjectCodes });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+});
