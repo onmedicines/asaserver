@@ -266,6 +266,22 @@ app.get("/faculty/getAllSubmitted", authenticate, async (req, res) => {
   }
 });
 
+app.get("/faculty/getAllNotSubmitted", authenticate, async (req, res) => {
+  try {
+    const { role } = req.payload;
+    if (role !== "faculty") throw new Error("Request could not be authorized");
+    const { code } = req.query;
+    const studentsWhoHaveNotSubmitted = await Student.find({ subjects: { $elemMatch: { code, isSubmitted: false } } }, { rollNumber: 1, name: 1 }).sort({ rollNumber: 1 });
+    console.log(studentsWhoHaveNotSubmitted);
+    console.log(studentsWhoHaveNotSubmitted); // logs
+    if (!studentsWhoHaveNotSubmitted) throw new Error("Some error occured on our part");
+    if (studentsWhoHaveNotSubmitted.length === 0) throw new Error("All registered students have submitted then assignment");
+    return res.status(200).json({ studentsWhoHaveNotSubmitted });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+});
+
 app.get("/getSubjects", authenticate, async (req, res) => {
   try {
     const semesters = await Semester.find({});
