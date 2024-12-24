@@ -253,6 +253,19 @@ app.get("/faculty/getAssignment", authenticate, async (req, res) => {
   }
 });
 
+app.get("/faculty/getAllSubmitted", authenticate, async (req, res) => {
+  try {
+    const { role } = req.payload;
+    if (role !== "faculty") throw new Error("Request could not be authorized");
+    const { code } = req.query;
+    const assignments = await Assignment.find({ code }, { rollNumber: 1, code: 1 }).sort({ rollNumber: 1 });
+    if (!assignments) throw new Error("No assignments submitted for this subject");
+    return res.status(200).json({ assignments });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+});
+
 app.get("/getSubjects", authenticate, async (req, res) => {
   try {
     const semesters = await Semester.find({});
