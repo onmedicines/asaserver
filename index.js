@@ -222,16 +222,11 @@ app.get("/getFacultyInfo", authenticate, async (req, res) => {
 app.post("/getStudentByRoll", authenticate, async (req, res) => {
   try {
     const { rollNumber } = req.body;
-    console.log(req.body);
     if (!rollNumber) throw new Error("Roll number not found");
-    const assignments = await Assignment.find({ rollNumber }, { code: 1 });
-    if (!assignments) throw new Error("No assignments with guven roll number found");
-    const codes = assignments.map((ele) => ele.code);
-    const student = await Student.findOne({ rollNumber }, { name: 1 });
+    const student = await Student.findOne({ rollNumber }, { password: 0, _id: 0 });
     if (!student) throw new Error("Student not found");
-    return res.status(200).json({ codes, name: student.name });
+    return res.status(200).json(student);
   } catch (err) {
-    console.log(err.message);
     res.status(400).json({ message: err.message });
   }
 });
