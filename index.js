@@ -176,21 +176,6 @@ app.get("/student/getAssignment", authenticate, async (req, res) => {
   res.send(assignment.file.data);
 });
 
-app.post("/admin/login", async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const admin = await Admin.findOne({ username });
-    if (!admin) throw new Error("admin does not exist");
-    if (admin.password !== password) throw new Error("Invalid credentials");
-    const token = await generateToken({ username, role: "admin" });
-    if (!token) throw new Error("Token generation failed");
-    return res.status(200).json({ message: "admin logged in successfully", token });
-  } catch (err) {
-    console.log(err);
-    return res.status(400).json({ message: "some error occured" });
-  }
-});
-
 // faculty
 app.post("/faculty/login", async (req, res) => {
   try {
@@ -286,6 +271,21 @@ app.get("/getSubjects", authenticate, async (req, res) => {
       return [...acc, ...codes];
     }, []);
     return res.status(200).json({ subjectCodes });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+});
+
+// admin
+app.post("/admin/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const admin = await Admin.findOne({ username });
+    if (!admin) throw new Error("Admin does not exist");
+    if (admin.password !== password) throw new Error("Invalid credentials");
+    const token = await generateToken({ username, role: "admin" });
+    if (!token) throw new Error("Token generation failed");
+    return res.status(200).json({ message: "Faculty logged in successfully", token });
   } catch (err) {
     return res.status(400).json({ message: err.message });
   }
