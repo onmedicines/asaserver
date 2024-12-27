@@ -310,9 +310,34 @@ app.post("/addFaculty", authenticate, async (req, res) => {
     if (role !== "admin") throw new Error("Unauthorized");
     const { name, username, password } = req.body;
     if (!name || !username || !password) throw new Error("Fields missing");
+    const faculty = await Faculty.findOne({ username });
+    if (faculty) throw new Error("Faculty already exists");
     await Faculty.create({ username, name, password });
     return res.status(200).json({ message: "Faculty added successfully" });
   } catch (err) {
     return res.status(400).json({ message: "Could not add Faculty" });
+  }
+});
+
+app.post("/addStudent", authenticate, async (req, res) => {
+  try {
+    const { role } = req.payload;
+    if (role !== "admin") throw new Error("Unauthorized");
+    const { rollNumber, name, semester, password } = req.body;
+    if (!rollNumber || !name || !semester || !password) throw new Error("One or More Fields missing.");
+    if (semester < 1 || semester > 6) throw new Error("Semester does not exist");
+    let student = await Student.findOne({ rollNumber });
+    if (student) throw new Error("Student with this roll number already exists");
+    let { subjects } = await Semester.findOne({ semester: semester });
+    await Student.create({
+      name,
+      rollNumber,
+      semester,
+      password,
+      subjects,
+    });
+    return res.status(200).json({ message: "registered successfully" });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
   }
 });
