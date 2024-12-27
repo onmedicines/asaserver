@@ -381,3 +381,18 @@ app.delete("/deleteFaculty", authenticate, async (req, res) => {
     return res.status(400).json({ message: err.message });
   }
 });
+
+app.get("/getStudentsBySemester", authenticate, async (req, res) => {
+  try {
+    const { role } = req.payload;
+    if (role !== "admin") throw new Error("Unauthorized");
+    const { semester } = req.query;
+    if (!semester) throw new Error("Semester not provided");
+    if (semester < 1 || semester > 6) throw new Error("Semester not valid");
+    const students = await Student.find({ semester }, { id: 1, name: 1, rollNumber: 1 });
+    if (students.length === 0) throw new Error("No students found for given semester");
+    return res.status(200).json(students);
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+});
