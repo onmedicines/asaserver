@@ -367,3 +367,17 @@ app.get("/getAllFaculties", authenticate, async (req, res) => {
     return res.status(400).json({ message: err.message });
   }
 });
+
+app.delete("/deleteFaculty", authenticate, async (req, res) => {
+  try {
+    const { role } = req.payload;
+    if (role !== "admin") throw new Error("Unauthorized");
+    const { _id } = req.body;
+    if (!_id) throw new Error("Id missing");
+    const response = await Faculty.deleteOne({ _id });
+    if (!response.acknowledged) throw new Error("Could not delete faculty, please try again");
+    return res.status(200).json({ message: "Faculty deleted successfully" });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+});
