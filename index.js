@@ -303,3 +303,16 @@ app.get("/getAdminDetails", authenticate, async (req, res) => {
     return res.status(400).json({ message: err.message });
   }
 });
+
+app.post("/addFaculty", authenticate, async (req, res) => {
+  try {
+    const { role } = req.payload;
+    if (role !== "admin") throw new Error("Unauthorized");
+    const { name, username, password } = req.body;
+    if (!name || !username || !password) throw new Error("Fields missing");
+    await Faculty.create({ username, name, password });
+    return res.status(200).json({ message: "Faculty added successfully" });
+  } catch (err) {
+    return res.status(400).json({ message: "Could not add Faculty" });
+  }
+});
