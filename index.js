@@ -355,3 +355,15 @@ app.post("/getFacultyByUsername", authenticate, async (req, res) => {
     return res.status(400).json({ message: err.message });
   }
 });
+
+app.get("/getAllFaculties", authenticate, async (req, res) => {
+  try {
+    const { role } = req.payload;
+    if (role !== "admin") throw new Error("Unauthorized");
+    const faculties = await Faculty.find({});
+    if (faculties.length === 0) throw new Error("No faculties registered yet");
+    return res.status(200).json(faculties);
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+});
