@@ -341,3 +341,17 @@ app.post("/addStudent", authenticate, async (req, res) => {
     return res.status(400).json({ message: err.message });
   }
 });
+
+app.post("/getFacultyByUsername", authenticate, async (req, res) => {
+  try {
+    const { role } = req.payload;
+    if (role !== "admin") throw new Error("Unauthorized");
+    const { username } = req.body;
+    if (!username) throw new Error("Username missing");
+    const faculty = await Faculty.findOne({ username });
+    if (!faculty) throw new Error("No faculty with this username");
+    return res.status(200).json({ faculty });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+});
