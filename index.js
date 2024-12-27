@@ -285,8 +285,21 @@ app.post("/admin/login", async (req, res) => {
     if (admin.password !== password) throw new Error("Invalid credentials");
     const token = await generateToken({ username, role: "admin" });
     if (!token) throw new Error("Token generation failed");
-    return res.status(200).json({ message: "Faculty logged in successfully", token });
+    return res.status(200).json({ message: "Admin logged in successfully", token });
   } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+});
+
+app.get("/getAdminDetails", authenticate, async (req, res) => {
+  try {
+    const { username, role } = req.payload;
+    if (role !== "admin") throw new Error("Unauthorized");
+    const admin = await Admin.findOne({ username }, { name: 1 });
+    if (!admin) throw new Error("Something went wrong. Please login again.");
+    return res.status(200).json(admin);
+  } catch (err) {
+    console.log(err);
     return res.status(400).json({ message: err.message });
   }
 });
